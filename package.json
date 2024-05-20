@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsx ./build.ts",
-    "start": "node ./dist/index.js",
+    "start": "tsx src/server.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/libs/database/migrate.ts",
     "db:drop": "drizzle-kit drop",

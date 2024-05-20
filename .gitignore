@@ -3,6 +3,9 @@ dist
 # local env files
 .env*.local
 .env
+# local test variables
+test/test-arguments.js
 
 # GCP 
 gcp-key.json
+
