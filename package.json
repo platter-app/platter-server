@@ -20,7 +20,8 @@
     "test": "vitest run",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "tmp": "tsx src/services/fetchers/cefi/coinone/index.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
@@ -28,6 +29,7 @@
     "@hono/swagger-ui": "^0.2.2",
     "@hono/zod-validator": "^0.2.1",
     "@supabase/supabase-js": "^2.43.2",
+    "axios": "^1.7.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.30.10",
     "hono": "^4.3.8",
