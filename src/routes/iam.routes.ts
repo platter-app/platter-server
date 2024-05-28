@@ -1,5 +1,5 @@
-import authMiddleware from "@/middlewares/auth.middleware";
-import { Hono } from "hono";
+import authMiddleware from '@/middlewares/auth.middleware';
+import { Hono } from 'hono';
 
 type Variables = {
   user: {
@@ -11,17 +11,17 @@ type Variables = {
 };
 
 const iamRoutes = new Hono<{ Variables: Variables }>()
-  .get("/test", async (c) => {
+  .get('/test', async (c) => {
     const user = {
-      id: "1",
-      email: "test@gmail.com",
+      id: '1',
+      email: 'test@gmail.com',
     };
 
     return c.json(user);
   })
-  .use("*", authMiddleware)
-  .get("/", async (c) => {
-    const user = c.get("user");
+  .use('*', authMiddleware)
+  .get('/', async (c) => {
+    const user = c.get('user');
 
     return c.json({ user, allUsers: 0 });
   });

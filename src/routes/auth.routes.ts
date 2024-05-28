@@ -1,35 +1,41 @@
-import { supabase } from "@/libs/supabase/client";
-import { zValidator } from "@/middlewares/zodValidator.middleware";
+import { supabase } from '@/libs/supabase/client';
+import { zValidator } from '@/middlewares/zodValidator.middleware';
 
-import { db } from "@/libs/database/db";
-import { users } from "@/libs/database/schema";
-import { Hono } from "hono";
-import { getCookie, setCookie } from "hono/cookie";
-import { HTTPException } from "hono/http-exception";
-import { endTime, startTime } from "hono/timing";
-import { z } from "zod";
+import { db } from '@/libs/database/db';
+import { users } from '@/libs/database/schema';
+import { Hono } from 'hono';
+import { getCookie, setCookie } from 'hono/cookie';
+import { HTTPException } from 'hono/http-exception';
+import { endTime, startTime } from 'hono/timing';
+import { z } from 'zod';
+import { eq } from 'drizzle-orm';
 
 const authRoutes = new Hono()
   .post(
-    "/sign-up",
+    '/sign-up',
     zValidator(
-      "json",
+      'json',
       z.object({
         email: z.string(),
         password: z.string().min(8),
-      }),
+      })
     ),
     async (c) => {
-      const { email, password } = c.req.valid("json");
+      const { email, password } = c.req.valid('json');
 
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error || !data?.user?.email) {
-        console.log(error);
-        throw new Error(error?.message || "Error while signing up", {
+        if (error?.message === 'duplicate key value violates unique constraint "users_pkey"') {
+          throw new HTTPException(409, {
+            message: 'User already exists',
+          });
+        }
+
+        throw new Error(error?.message || 'Error while signing up', {
           cause: error,
         });
       }
@@ -41,22 +47,30 @@ const authRoutes = new Hono()
         updatedAt: data?.user.updated_at,
       };
 
+      const isUserExists = await db.select().from(users).where(eq(users.id, dbUser.id));
+
+      if (isUserExists.length > 0) {
+        throw new HTTPException(409, {
+          message: 'User already exists',
+        });
+      }
+
       const user = await db.insert(users).values(dbUser).returning();
 
       return c.json(user);
-    },
+    }
   )
   .post(
-    "/sign-in",
+    '/sign-in',
     zValidator(
-      "json",
+      'json',
       z.object({
         email: z.string(),
         password: z.string().min(8),
-      }),
+      })
     ),
     async (c) => {
-      const { email, password } = c.req.valid("json");
+      const { email, password } = c.req.valid('json');
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -64,88 +78,88 @@ const authRoutes = new Hono()
       });
 
       if (error) {
-        console.error("Error while signing in", error);
+        console.error('Error while signing in', error);
         throw new HTTPException(401, {
           message: error.message,
         });
       }
 
-      setCookie(c, "access_token", data?.session.access_token, {
+      setCookie(c, 'access_token', data?.session.access_token, {
         ...(data?.session.expires_at && {
           expires: new Date(data.session.expires_at),
         }),
         httpOnly: true,
-        path: "/",
+        path: '/',
         secure: true,
       });
 
-      setCookie(c, "refresh_token", data?.session.refresh_token, {
+      setCookie(c, 'refresh_token', data?.session.refresh_token, {
         ...(data?.session.expires_at && {
           expires: new Date(data.session.expires_at),
         }),
         httpOnly: true,
-        path: "/",
+        path: '/',
         secure: true,
       });
 
       return c.json(data.user);
-    },
+    }
   )
   .post(
-    "/sign-in-with-provider",
+    '/sign-in-with-provider',
     zValidator(
-      "json",
+      'json',
       z.object({
-        provider: z.enum(["google", "apple"]),
+        provider: z.enum(['google', 'apple']),
         token: z.string().min(8),
         accessToken: z.string().optional(),
-      }),
+      })
     ),
     async (c) => {
-      const { token, provider, accessToken } = c.req.valid("json");
+      const { token, provider, accessToken } = c.req.valid('json');
       // start a new timer
-      startTime(c, "supabase.auth.signInWithProvider");
+      startTime(c, 'supabase.auth.signInWithProvider');
       const { data, error } = await supabase.auth.signInWithIdToken({
         provider,
         token,
         access_token: accessToken,
       });
       // end the timer
-      endTime(c, "supabase.auth.signInWithProvider");
+      endTime(c, 'supabase.auth.signInWithProvider');
 
       if (error) {
-        console.error("Error while signing in with Provider ", error);
+        console.error('Error while signing in with Provider ', error);
         throw new HTTPException(401, {
           message: error.message,
         });
       }
 
-      setCookie(c, "access_token", data?.session.access_token, {
+      setCookie(c, 'access_token', data?.session.access_token, {
         ...(data?.session.expires_at && {
           expires: new Date(data.session.expires_at),
         }),
         httpOnly: true,
-        path: "/",
+        path: '/',
         secure: true,
       });
 
-      setCookie(c, "refresh_token", data?.session.refresh_token, {
+      setCookie(c, 'refresh_token', data?.session.refresh_token, {
         ...(data?.session.expires_at && {
           expires: new Date(data.session.expires_at),
         }),
         httpOnly: true,
-        path: "/",
+        path: '/',
         secure: true,
       });
 
       return c.json(data.user);
-    },
+    }
   )
-  .get("/refresh", async (c) => {
-    const refresh_token = getCookie(c, "refresh_token");
+  .get('/refresh', async (c) => {
+    const refresh_token = getCookie(c, 'refresh_token');
     if (!refresh_token) {
       throw new HTTPException(403, {
-        message: "No refresh token",
+        message: 'No refresh token',
       });
     }
 
@@ -154,14 +168,14 @@ const authRoutes = new Hono()
     });
 
     if (error) {
-      console.error("Error while refreshing token", error);
+      console.error('Error while refreshing token', error);
       throw new HTTPException(403, {
         message: error.message,
       });
     }
 
     if (data?.session) {
-      setCookie(c, "refresh_token", data.session.refresh_token, {
+      setCookie(c, 'refresh_token', data.session.refresh_token, {
         ...(data.session.expires_at && {
           expires: new Date(data.session.expires_at),
         }),
