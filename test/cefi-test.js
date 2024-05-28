@@ -14,7 +14,15 @@ async function run() {
 
   const requirement = requirements[cefiName];
 
-  await cefi.default(requirement);
+  const res = await cefi.default(requirement);
+
+  console.log(`거래소: ${res.displayName}`);
+  console.log(`통화: ${res.currency}`);
+
+  res.data.forEach((item) => {
+    console.log(`타입: ${item.name}`);
+    console.table(item.balance);
+  });
 }
 
 run();

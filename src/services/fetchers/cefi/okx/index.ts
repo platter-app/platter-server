@@ -46,7 +46,6 @@ const okxFunding = async (obj: { api_key: string; api_secret: string; passphrase
     // .filter((e: any) =>)
     .map((e: any) => {
       return {
-        address: '',
         symbol: e.ccy,
         balance: e.bal,
         price: usdtPricesMap[e.ccy + '-USDT']?.last ?? 0,
@@ -64,7 +63,6 @@ const okxTrading = async (obj: { api_key: string; api_secret: string; passphrase
     // .filter((e: any) =>)
     .map((e: any) => {
       return {
-        address: '',
         symbol: e.ccy,
         balance: e.eq,
         price: e.eq / e.eqUsd,
@@ -87,13 +85,18 @@ const okx = async (obj: { api_key: string; api_secret: string; passphrase: strin
     return {
       type: 'CEFI',
       displayName: 'OKX',
-      chain: '',
       imgSrc:
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA1UlEQVR4AWJwL/CBY0D7ZYCBQQhE4at0iU6RAB2pe0TnCKDsUTpFfw/YVoPo32dpeNDsvPmWStPDdqWu9ifB2ww9b80vsXC/LvSEGM0HCITBAkkWAIkIkADQuBISzrkWY2whhEHee8kIuef38IDXOgAKZ1FrFc2QmwS8lgFAvwsAXh8EOADY0TB8KufclFJNaz0Ia8hNauC1DiAJjYRATqrbB4C/FQK5DwMcAMIm3H8MSyn7juG5CQ8A/UFCe5IRxH+WWyKA4Y9m/OF0HM/NC+O5vff8ARHpaPq63KdGAAAAAElFTkSuQmCC',
-      balance: {
-        funding,
-        trading,
-      },
+      data: [
+        {
+          name: 'Funding Account', // '펀딩 지갑'
+          balance: funding,
+        },
+        {
+          name: 'Trading Account', // '거래 지갑'
+          balance: trading,
+        },
+      ],
       currency: 'USD',
     };
   } catch (error) {

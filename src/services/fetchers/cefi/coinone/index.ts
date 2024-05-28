@@ -47,7 +47,6 @@ const coinone = async (obj: { api_key: string; api_secret: string }) => {
       .filter((e: any) => Number(e.available) > 0 || Number(e.limit) > 0)
       .map((e: any) => {
         return {
-          address: '',
           symbol: e.currency,
           balance: Number(e.available) + Number(e.limit),
           price: priceObj[e.currency.toLowerCase()],
@@ -59,11 +58,13 @@ const coinone = async (obj: { api_key: string; api_secret: string }) => {
     return {
       type: 'CEFI',
       displayName: 'Coinone',
-      chain: '',
       imgSrc: 'https://coinone.co.kr/common/assets/images/coinone_logo/coinone_app_icon.jpg',
-      balance: {
-        wallet: filtered,
-      },
+      data: [
+        {
+          name: '현물 지갑',
+          balance: filtered,
+        },
+      ],
       currency: 'KRW',
     };
   } catch (err) {

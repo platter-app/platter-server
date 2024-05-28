@@ -143,7 +143,6 @@ const bithumb = async (obj: { api_key: string; api_secret: string }) => {
       const asset = key.replace('total_', '');
       const price = priceObj[asset.toUpperCase()] ? priceObj[asset.toUpperCase()] : 1;
       allTotalData.push({
-        address: '',
         symbol: asset,
         balance: Number(value),
         price: price,
@@ -155,11 +154,13 @@ const bithumb = async (obj: { api_key: string; api_secret: string }) => {
   return {
     type: 'CEFI',
     displayName: 'Bithumb',
-    chain: '',
     imgSrc: 'https://m.bithumb.com/react/static/9e1490b6/media/icon-bithumb-logo.svg',
-    balance: {
-      wallet: allTotalData,
-    },
+    data: [
+      {
+        name: '현물 지갑',
+        balance: allTotalData,
+      },
+    ],
     currency: 'KRW',
   };
 };

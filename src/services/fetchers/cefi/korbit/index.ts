@@ -58,9 +58,7 @@ const korbit = async (korbitRequirements: { api_key: string; api_secret: string 
       .filter(([, value]: [string, any]) => Number(value.available) > 0 || Number(value.trade_in_use) > 0)
       .map(([key, value]: [string, any]) => {
         return {
-          address: '',
           symbol: key,
-          token: key,
           balance: Number(value.available) + Number(value.trade_in_use),
           price: Number(pricesMap[key + '_krw']),
           value: (Number(value.available) + Number(value.trade_in_use)) * Number(pricesMap[key + '_krw']),
@@ -70,11 +68,13 @@ const korbit = async (korbitRequirements: { api_key: string; api_secret: string 
     return {
       type: 'CEFI',
       displayName: 'korbit',
-      chain: '',
       imgSrc: 'https://korbit.co.kr/common/assets/images/korbit_logo/korbit_app_icon.jpg',
-      balance: {
-        holdings,
-      },
+      data: [
+        {
+          name: '현물 지갑',
+          balance: holdings,
+        },
+      ],
       currency: 'KRW',
     };
   } catch (err) {

@@ -84,7 +84,6 @@ const binanceSpot = async (obj: { api_key: string; api_secret: string }) => {
     .filter((e: any) => e.asset.length >= 2 && e.asset.slice(0, 2) !== 'LD')
     .map((e: any) => {
       return {
-        address: '',
         symbol: e.asset,
         balance: Number(e.free) + Number(e.locked),
         price: pricesMap[e.asset + 'USDT']?.price ?? 0,
@@ -100,7 +99,6 @@ const binanceFunding = async (obj: { api_key: string; api_secret: string }) => {
   const res = await call('/sapi/v1/asset/get-funding-asset', api_key, api_secret, true).then((res) => res);
   const formatted = res.map((e: any) => {
     return {
-      address: '',
       symbol: e.asset,
       balance: Number(e.free) + Number(e.locked),
       price: pricesMap[e.asset + 'USDT']?.price ?? 0,
@@ -118,7 +116,6 @@ const binanceEarn = async (obj: { api_key: string; api_secret: string }) => {
     .filter((e: any) => Number(e.totalAmount) > 0)
     .map((e: any) => {
       return {
-        address: '',
         symbol: e.asset,
         balance: Number(e.totalAmount),
         price: pricesMap[e.asset + 'USDT']?.price ?? 0,
@@ -136,7 +133,6 @@ const binanceLoan = async (obj: { api_key: string; api_secret: string }) => {
     // filter first 2 letter contains LD
     .map((e: any): any => {
       return {
-        address: '',
         collateralSymbol: e.collateralCoin,
         collateralBalance: e.collateralAmount,
         collateralPrice: pricesMap[e.collateralCoin + 'USDT']?.price ?? 0,
@@ -169,7 +165,6 @@ const binanceUsdFutures = async (obj: { api_key: string; api_secret: string }) =
     .filter((e: any) => Number(e.positionAmt) > 0)
     .map((e: any): any => {
       return {
-        address: '',
         symbol: e.symbol,
         balance: e.positionAmt,
         entryPrice: e.entryPrice,
@@ -202,16 +197,29 @@ const binance = async (obj: { api_key: string; api_secret: string }) => {
       type: 'CEFI',
       displayName: 'Binance',
 
-      chain: '',
       imgSrc:
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA3ElEQVR4AcWXAQYDMRREF9DTBEBF7Un2JFWof6ZaeqvaA7TBp4xh2C9mGdjEviebJPlL5Tne7TkSi+NJ+DcTFjgkLHBIWOCQsMAhYYKjxHz4nhES8+CXTF2CwO8K/u8rJR5nBK4jHwVXEvmNrolSgsC1BMIlcEsAk9hJWx9ZqUTCSdsmJhwFNQZPyDFyI6BG3r2SERwuhxrh2Z9IMDgwgsC1BMJBYlVwSPgF7L/APwnry7DXl6Ee6rkbkYAXtmI9P/yHkf849l9I/Fcy/6XUfy33Fyb+0sxfnLrK8x8BCDupxYlOYwAAAABJRU5ErkJggg==',
-      balance: {
-        spot,
-        earn,
-        funding,
-        loan,
-        futures,
-      },
+      data: [
+        { name: 'Spot Account', balance: spot },
+
+        {
+          name: 'Earn Account',
+          balance: earn,
+        },
+
+        {
+          name: 'Funding Account',
+          balance: funding,
+        },
+        {
+          name: 'Loan Account',
+          balance: loan,
+        },
+        {
+          name: 'USD Futures Account',
+          balance: futures,
+        },
+      ],
       currency: 'USD',
     };
   } catch (e) {
