@@ -23,7 +23,7 @@ const authRoutes = new Hono()
     async (c) => {
       const { email, password } = c.req.valid('json');
 
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
