@@ -10,6 +10,9 @@ import { endTime, startTime } from 'hono/timing';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import authMiddleware from '@/middlewares/auth.middleware';
+
+const availableProviders = ['binance', 'okx', 'coinone', 'upbit', 'bithumb', 'gopax', 'korbit'] as const;
+
 const registerRoutes = new Hono<{
   Variables: {
     user: {
@@ -26,7 +29,7 @@ const registerRoutes = new Hono<{
     zValidator(
       'json',
       z.object({
-        provider: z.string(),
+        provider: z.enum(availableProviders),
         apiKey: z.string(),
         apiSecret: z.string(),
         passPhrase: z.string().optional(),
@@ -34,17 +37,21 @@ const registerRoutes = new Hono<{
     ),
     async (c) => {
       const user = c.get('user');
-
-      console.log(user.id, user.email, user.created_at, user.updated_at);
-
-      const storedApiKeys = await db.select().from(apiKeys).where(eq(apiKeys.ownerId, user.id));
-      // console.log(storedApiKeys);
       const { provider, apiKey, apiSecret, passPhrase } = c.req.valid('json');
 
+      // Provider 중복 등록 체크
+      const storedApiKeys = await db.select().from(apiKeys).where(eq(apiKeys.ownerId, user.id));
       const isRegistered = storedApiKeys.some((item) => item.provider === provider);
       if (isRegistered) {
         throw new HTTPException(409, {
           message: `Provider ${provider} Data already exists`,
+        });
+      }
+
+      // OKX 의 경우, passphrase 는 필수
+      if (provider === 'okx' && !passPhrase) {
+        throw new HTTPException(400, {
+          message: 'Passphrase is required for OKX',
         });
       }
 

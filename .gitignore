@@ -3,6 +3,7 @@ dist
 # local env files
 .env*.local
 .env
+.env.dev
 # local test variables
 test/test-arguments.js
 

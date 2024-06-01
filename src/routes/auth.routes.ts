@@ -27,10 +27,15 @@ const authRoutes = new Hono()
         email,
         password,
       });
-
       if (error || !data?.user?.email) {
         if (error?.message === 'duplicate key value violates unique constraint "users_pkey"') {
-          throw new HTTPException(409, {
+          throw new HTTPException(422, {
+            message: 'User already exists',
+          });
+        }
+
+        if (error?.code === 'user_already_exists') {
+          throw new HTTPException(422, {
             message: 'User already exists',
           });
         }
@@ -50,7 +55,7 @@ const authRoutes = new Hono()
       const isUserExists = await db.select().from(users).where(eq(users.id, dbUser.id));
 
       if (isUserExists.length > 0) {
-        throw new HTTPException(409, {
+        throw new HTTPException(422, {
           message: 'User already exists',
         });
       }
@@ -78,7 +83,11 @@ const authRoutes = new Hono()
       });
 
       if (error) {
-        console.error('Error while signing in', error);
+        if (error.message === 'Invalid login credentials') {
+          throw new HTTPException(401, {
+            message: 'Invalid login credentials',
+          });
+        }
         throw new HTTPException(401, {
           message: error.message,
         });
