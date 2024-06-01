@@ -12,7 +12,7 @@ export const users = pgTable('users', {
     .default(sql`now()`),
 });
 
-export const apiKeys = pgTable('api_keys', {
+export const cefiRegistration = pgTable('cefi_registration', {
   id: serial('id').primaryKey(),
   ownerId: uuid('owner_id')
     .notNull()
@@ -21,6 +21,22 @@ export const apiKeys = pgTable('api_keys', {
   apiKey: text('api_key').notNull(),
   apiSecret: text('api_secret').notNull(),
   passPhrase: text('pass_phrase'),
+  createdAt: timestamp('created_at', { mode: 'string' })
+    .notNull()
+    .default(sql`now()`),
+  updatedAt: timestamp('updated_at', { mode: 'string' })
+    .notNull()
+    .default(sql`now()`),
+});
+
+export const defiRegistration = pgTable('defi_registration', {
+  id: serial('id').primaryKey(),
+  ownerId: uuid('owner_id')
+    .notNull()
+    .references(() => users.id),
+  addressType: text('address_type').notNull(),
+  address: text('address').notNull(),
+  alias: text('alias'),
   createdAt: timestamp('created_at', { mode: 'string' })
     .notNull()
     .default(sql`now()`),

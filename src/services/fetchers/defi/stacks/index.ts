@@ -11,7 +11,7 @@ async function main(principal: string) {
   const allFunctionsResults = await Promise.all(allFetchers);
 
   return {
-    type: 'DEFI',
+    type: 'DeFi',
     displayName: 'Stacks',
     address: principal,
     currency: 'USD',
