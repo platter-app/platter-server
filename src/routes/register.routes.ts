@@ -118,6 +118,46 @@ const registerRoutes = new Hono<{
         message: 'Registered successfully',
       });
     }
-  );
+  )
+  .get(
+    '/cefi',
+
+    async (c) => {
+      const user = c.get('user');
+
+      const storedApiKeys = await db.select().from(cefiRegistration).where(eq(cefiRegistration.ownerId, user.id));
+
+      const data = storedApiKeys.map((item) => {
+        return {
+          provider: item.provider,
+          apiKey: item.apiKey,
+        };
+      });
+
+      return c.json({
+        data,
+      });
+    }
+  )
+  .get('/defi', async (c) => {
+    const user = c.get('user');
+
+    const storedDefiRegistration = await db
+      .select()
+      .from(defiRegistration)
+      .where(eq(defiRegistration.ownerId, user.id));
+
+    const data = storedDefiRegistration.map((item) => {
+      return {
+        addressType: item.addressType,
+        address: item.address,
+        alias: item.alias,
+      };
+    });
+
+    return c.json({
+      data,
+    });
+  });
 
 export default registerRoutes;

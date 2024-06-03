@@ -14,7 +14,7 @@ import iamRoutes from './routes/iam.routes';
 import registerRoutes from './routes/register.routes';
 
 const app = new Hono()
-  .basePath('/api')
+  // .basePath('/api')
   // Middlewares
   .use('*', logger())
   .use('*', cors())
