@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { and, eq } from 'drizzle-orm';
 import authMiddleware from '@/middlewares/auth.middleware';
 import cefiFetcher from '@/services/fetchers/cefi/index';
+import defiFetcher from '@/services/fetchers/defi/index';
 const portfolioRoutes = new Hono<{
   Variables: {
     user: {
@@ -78,6 +79,50 @@ const portfolioRoutes = new Hono<{
         api_secret: item.apiSecret,
         passphrase: item.passPhrase,
       });
+
+      return c.json({
+        data,
+      });
+    }
+  )
+  .get(
+    '/defi/:addressType/:address',
+
+    async (c) => {
+      const user = c.get('user');
+      const addressType = c.req.param('addressType').toLowerCase();
+      const address = c.req.param('address').toLowerCase();
+
+      const registered = await db
+        .select()
+        .from(defiRegistration)
+        .where(
+          and(
+            eq(defiRegistration.ownerId, user.id),
+            eq(defiRegistration.addressType, addressType),
+            eq(defiRegistration.address, address)
+          )
+        );
+
+      if (registered.length === 0) {
+        return c.json({
+          data: [],
+          message: 'No data found',
+        });
+      }
+
+      const item = registered[0]!;
+
+      const foundDefiFecther = defiFetcher[addressType as keyof typeof defiFetcher];
+
+      if (!foundDefiFecther) {
+        return c.json({
+          data: [],
+          message: 'No data found',
+        });
+      }
+
+      const data = await defiFetcher[addressType as keyof typeof defiFetcher](item.address);
 
       return c.json({
         data,

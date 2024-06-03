@@ -90,8 +90,8 @@ const registerRoutes = new Hono<{
 
       const dbDeFiRegistration = {
         ownerId: user.id,
-        addressType,
-        address,
+        addressType: addressType.toLowerCase(),
+        address: address.toLowerCase(),
         alias,
       };
 

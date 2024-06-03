@@ -8,14 +8,20 @@ async function main(principal: string) {
     return module.default.fetcher(principal);
   });
 
-  const allFunctionsResults = await Promise.all(allFetchers);
+  const allFunctionsResults = await Promise.allSettled(allFetchers);
 
   return {
     type: 'DeFi',
     displayName: 'Stacks',
     address: principal,
     currency: 'USD',
-    data: allFunctionsResults.map((result) => ({ name: result.displayName, balance: result.data })),
+    data: allFunctionsResults.map((result) => {
+      if (result.status === 'fulfilled') {
+        return { name: result.value.displayName, balance: result.value.data };
+      } else {
+        return { name: 'Error', balance: 'An unknown error occurred. Please try again.' };
+      }
+    }),
   };
 }
 
