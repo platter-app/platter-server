@@ -12,6 +12,7 @@ import swaggerApp from './middlewares/swagger.middleware';
 import authRoutes from './routes/auth.routes';
 import iamRoutes from './routes/iam.routes';
 import registerRoutes from './routes/register.routes';
+import portfolioRoutes from './routes/portfolio.routes';
 
 const app = new Hono()
   // .basePath('/api')
@@ -28,6 +29,7 @@ const app = new Hono()
   .route('/auth', authRoutes)
   .route('/iam', iamRoutes)
   .route('/registration', registerRoutes)
+  .route('/portfolio', portfolioRoutes)
   .onError(errorHandler);
 
 // Export the app TYPE

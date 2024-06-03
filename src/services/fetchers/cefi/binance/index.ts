@@ -224,6 +224,14 @@ const binance = async (obj: { api_key: string; api_secret: string }) => {
     };
   } catch (e) {
     console.log(e);
+    return {
+      type: 'CEFI',
+      displayName: 'Binance',
+      imgSrc:
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA3ElEQVR4AcWXAQYDMRREF9DTBEBF7Un2JFWof6ZaeqvaA7TBp4xh2C9mGdjEviebJPlL5Tne7TkSi+NJ+DcTFjgkLHBIWOCQsMAhYYKjxHz4nhES8+CXTF2CwO8K/u8rJR5nBK4jHwVXEvmNrolSgsC1BMIlcEsAk9hJWx9ZqUTCSdsmJhwFNQZPyDFyI6BG3r2SERwuhxrh2Z9IMDgwgsC1BMJBYlVwSPgF7L/APwnry7DXl6Ee6rkbkYAXtmI9P/yHkf849l9I/Fcy/6XUfy33Fyb+0sxfnLrK8x8BCDupxYlOYwAAAABJRU5ErkJggg==',
+      data: '알 수 없는 에러가 발생했습니다. 다시 시도해주세요.',
+      currency: 'USD',
+    };
   }
 };
 

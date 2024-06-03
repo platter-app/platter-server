@@ -104,65 +104,75 @@ const chr = (codePt: any) => {
 };
 
 const bithumb = async (obj: { api_key: string; api_secret: string }) => {
-  console.time('bithumb');
-  const { api_key, api_secret } = obj;
-  const res = await new XCoinAPI(api_key, api_secret)
-    .xcoinApiCall('/info/balance', {
-      currency: 'ALL',
-    })
-    .then((res: any) => res.data)
-    .then((res) => {
-      if (res.status === '5100') {
-        // retry
-        return new XCoinAPI(api_key, api_secret)
-          .xcoinApiCall('/info/balance', {
-            currency: 'ALL',
-          })
-          .then((res: any) => res.data);
-      } else {
-        return res;
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-  const priceRes = await axios.get('https://api.bithumb.com/public/ticker/ALL_KRW').then((res) => res.data.data);
-  const priceObj: any = {};
-  Object.entries(priceRes).forEach(([key, value]) => {
-    // @ts-ignore
-    priceObj[key] = Number(value.opening_price);
-  });
-
-  if (res.status === '5300') {
-    throw new Error('Invalid Apikey');
-  }
-  // const totalPrice;
-  const allTotalData: any[] = [];
-  Object.entries(res).forEach(([key, value]) => {
-    if (key.includes('total_')) {
-      const asset = key.replace('total_', '');
-      const price = priceObj[asset.toUpperCase()] ? priceObj[asset.toUpperCase()] : 1;
-      allTotalData.push({
-        symbol: asset,
-        balance: Number(value),
-        price: price,
-        value: Number(value) * price,
+  try {
+    console.time('bithumb');
+    const { api_key, api_secret } = obj;
+    const res = await new XCoinAPI(api_key, api_secret)
+      .xcoinApiCall('/info/balance', {
+        currency: 'ALL',
+      })
+      .then((res: any) => res.data)
+      .then((res) => {
+        if (!res || res?.status === '5100') {
+          // retry
+          return new XCoinAPI(api_key, api_secret)
+            .xcoinApiCall('/info/balance', {
+              currency: 'ALL',
+            })
+            .then((res: any) => res.data);
+        } else {
+          return res;
+        }
+      })
+      .catch((err) => {
+        console.log(err);
       });
+    const priceRes = await axios.get('https://api.bithumb.com/public/ticker/ALL_KRW').then((res) => res.data.data);
+    const priceObj: any = {};
+    Object.entries(priceRes).forEach(([key, value]) => {
+      // @ts-ignore
+      priceObj[key] = Number(value.opening_price);
+    });
+
+    if (res.status === '5300') {
+      throw new Error('Invalid Apikey');
     }
-  });
-  console.timeEnd('bithumb');
-  return {
-    type: 'CEFI',
-    displayName: 'Bithumb',
-    imgSrc: 'https://m.bithumb.com/react/static/9e1490b6/media/icon-bithumb-logo.svg',
-    data: [
-      {
-        name: '현물 지갑',
-        balance: allTotalData,
-      },
-    ],
-    currency: 'KRW',
-  };
+    // const totalPrice;
+    const allTotalData: any[] = [];
+    Object.entries(res).forEach(([key, value]) => {
+      if (key.includes('total_')) {
+        const asset = key.replace('total_', '');
+        const price = priceObj[asset.toUpperCase()] ? priceObj[asset.toUpperCase()] : 1;
+        allTotalData.push({
+          symbol: asset,
+          balance: Number(value),
+          price: price,
+          value: Number(value) * price,
+        });
+      }
+    });
+    console.timeEnd('bithumb');
+    return {
+      type: 'CEFI',
+      displayName: 'Bithumb',
+      imgSrc: 'https://m.bithumb.com/react/static/9e1490b6/media/icon-bithumb-logo.svg',
+      data: [
+        {
+          name: '현물 지갑',
+          balance: allTotalData,
+        },
+      ],
+      currency: 'KRW',
+    };
+  } catch (error) {
+    return {
+      type: 'CEFI',
+      displayName: 'Bithumb',
+      imgSrc: 'https://m.bithumb.com/react/static/9e1490b6/media/icon-bithumb-logo.svg',
+      data: '알 수 없는 에러가 발생했습니다. 다시 시도해주세요.',
+      currency: 'KRW',
+    };
+  }
 };
 
 export default bithumb;

@@ -6,4 +6,12 @@ import korbit from './korbit';
 import okx from './okx';
 import upbit from './upbit';
 
-export { binance, bithumb, coinone, gopax, korbit, okx, upbit };
+export default {
+  binance,
+  bithumb,
+  coinone,
+  gopax,
+  korbit,
+  okx,
+  upbit,
+};

@@ -31,7 +31,13 @@ const upbit = async (obj: { api_key: string; api_secret: string }) => {
       currency: 'KRW',
     };
   } catch (err) {
-    console.log(err);
+    return {
+      type: 'CEFI',
+      displayName: 'upbit',
+      imgSrc: 'https://upbit.co.kr/common/assets/images/upbit_logo/upbit_app_icon.jpg',
+      data: '알 수 없는 에러가 발생했습니다. 다시 시도해주세요.',
+      currency: 'KRW',
+    };
   }
 };
 export default upbit;

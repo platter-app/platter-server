@@ -69,6 +69,13 @@ const coinone = async (obj: { api_key: string; api_secret: string }) => {
     };
   } catch (err) {
     console.log(err);
+    return {
+      type: 'CEFI',
+      displayName: 'Coinone',
+      imgSrc: 'https://coinone.co.kr/common/assets/images/coinone_logo/coinone_app_icon.jpg',
+      data: '알 수 없는 에러가 발생했습니다. 다시 시도해주세요.',
+      currency: 'KRW',
+    };
   }
 };
 export default coinone;

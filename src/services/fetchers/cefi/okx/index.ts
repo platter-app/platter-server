@@ -72,7 +72,8 @@ const okxTrading = async (obj: { api_key: string; api_secret: string; passphrase
 
   return formatted;
 };
-const okx = async (obj: { api_key: string; api_secret: string; passphrase: string }) => {
+const okx = async (obj: { api_key: string; api_secret: string; passphrase: string | null }) => {
+  if (!obj.passphrase) throw new Error('passphrase is required');
   try {
     console.time('okx');
     const { api_key, api_secret, passphrase } = obj;
@@ -101,6 +102,14 @@ const okx = async (obj: { api_key: string; api_secret: string; passphrase: strin
     };
   } catch (error) {
     console.log(error);
+    return {
+      type: 'CEFI',
+      displayName: 'OKX',
+      imgSrc:
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA1UlEQVR4AWJwL/CBY0D7ZYCBQQhE4at0iU6RAB2pe0TnCKDsUTpFfw/YVoPo32dpeNDsvPmWStPDdqWu9ifB2ww9b80vsXC/LvSEGM0HCITBAkkWAIkIkADQuBISzrkWY2whhEHee8kIuef38IDXOgAKZ1FrFc2QmwS8lgFAvwsAXh8EOADY0TB8KufclFJNaz0Ia8hNauC1DiAJjYRATqrbB4C/FQK5DwMcAMIm3H8MSyn7juG5CQ8A/UFCe5IRxH+WWyKA4Y9m/OF0HM/NC+O5vff8ARHpaPq63KdGAAAAAElFTkSuQmCC',
+      data: '알 수 없는 에러가 발생했습니다. 다시 시도해주세요.',
+      currency: 'USD',
+    };
   }
 };
 
