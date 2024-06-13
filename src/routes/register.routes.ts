@@ -8,7 +8,7 @@ import { getCookie, setCookie } from 'hono/cookie';
 import { HTTPException } from 'hono/http-exception';
 import { endTime, startTime } from 'hono/timing';
 import { z } from 'zod';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import authMiddleware from '@/middlewares/auth.middleware';
 import WAValidator from 'multicoin-address-validator';
 const availableProviders = ['binance', 'okx', 'coinone', 'upbit', 'bithumb', 'gopax', 'korbit'] as const;
@@ -116,6 +116,88 @@ const registerRoutes = new Hono<{
 
       return c.json({
         message: 'Registered successfully',
+      });
+    }
+  )
+  .delete(
+    '/cefi',
+    zValidator(
+      'json',
+      z.object({
+        addressType: z.enum(availableAddressType),
+        address: z.string(),
+      })
+    ),
+    async (c) => {
+      const user = c.get('user');
+      const { addressType, address } = c.req.valid('json');
+
+      // 1. addressType, address 를 이용하여 해당 데이터가 존재하는지 확인
+      const lowercasedAddressType = addressType.toLowerCase();
+      const lowercasedAddress = address.toLowerCase();
+
+      const storedDefiRegistration = await db
+        .select()
+        .from(defiRegistration)
+        .where(
+          and(
+            eq(defiRegistration.ownerId, user.id),
+            eq(defiRegistration.addressType, lowercasedAddressType),
+            eq(defiRegistration.address, lowercasedAddress)
+          )
+        );
+
+      const isRegistered = storedDefiRegistration.length > 0;
+      if (!isRegistered) {
+        throw new HTTPException(404, {
+          message: `Address ${address} Data not found`,
+        });
+      }
+
+      // 2. addressType, address 를 이용하여 해당 데이터 삭제
+
+      const apiKeyRegistration = await db
+        .delete(defiRegistration)
+        .where(
+          and(
+            eq(defiRegistration.ownerId, user.id),
+            eq(defiRegistration.addressType, lowercasedAddressType),
+            eq(defiRegistration.address, lowercasedAddress)
+          )
+        );
+
+      return c.json({
+        message: 'Deleted successfully',
+      });
+    }
+  )
+  .delete(
+    '/defi',
+    zValidator(
+      'json',
+      z.object({
+        provider: z.enum(availableAddressType),
+      })
+    ),
+    async (c) => {
+      const user = c.get('user');
+      const { provider } = c.req.valid('json');
+
+      const storedApiKeys = await db.select().from(cefiRegistration).where(eq(cefiRegistration.ownerId, user.id));
+
+      const isRegistered = storedApiKeys.some((item) => item.provider === provider);
+      if (!isRegistered) {
+        throw new HTTPException(404, {
+          message: `Provider ${provider} Data not found`,
+        });
+      }
+
+      const apiKeyRegistration = await db
+        .delete(cefiRegistration)
+        .where(and(eq(cefiRegistration.ownerId, user.id), eq(cefiRegistration.provider, provider)));
+
+      return c.json({
+        message: 'Deleted successfully',
       });
     }
   )
