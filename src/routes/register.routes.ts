@@ -120,7 +120,7 @@ const registerRoutes = new Hono<{
     }
   )
   .delete(
-    '/cefi',
+    '/defi',
     zValidator(
       'json',
       z.object({
@@ -172,11 +172,11 @@ const registerRoutes = new Hono<{
     }
   )
   .delete(
-    '/defi',
+    '/cefi',
     zValidator(
       'json',
       z.object({
-        provider: z.enum(availableAddressType),
+        provider: z.enum(availableProviders),
       })
     ),
     async (c) => {
