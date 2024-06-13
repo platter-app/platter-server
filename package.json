@@ -40,13 +40,17 @@
     "zod-validation-error": "^3.3.0"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.12.12",
+    "@types/uuid": "^9.0.8",
     "@vitest/ui": "^1.6.0",
     "drizzle-kit": "^0.21.2",
     "esbuild": "^0.21.3",
+    "jsonwebtoken": "^9.0.2",
     "npm-run-all": "^4.1.5",
     "tsx": "^4.10.5",
     "typescript": "^5.4.5",
+    "uuid": "^10.0.0",
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^1.6.0"
   }

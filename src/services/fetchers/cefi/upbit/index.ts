@@ -1,13 +1,73 @@
-import axios from 'axios';
-
+import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 const upbit = async (obj: { api_key: string; api_secret: string }) => {
   try {
     console.time('upbit');
     const { api_key, api_secret } = obj;
+    const access_key = api_key;
+    const secret_key = api_secret;
 
-    const data = await axios
-      .get(`http://52.193.50.19:3000/upbit?api_key=${api_key}&api_secret=${api_secret}`)
-      .then((res) => res.data);
+    const server_url = 'https://api.upbit.com';
+
+    const payload = {
+      access_key: access_key,
+      nonce: uuidv4(),
+    };
+
+    const token = jwt.sign(payload, secret_key);
+
+    const marketOption = {
+      method: 'GET',
+      url: server_url + '/v1/market/all',
+      headers: { Authorization: `Bearer ${token}` },
+    };
+
+    const markets = await fetch(marketOption.url, marketOption)
+      .then((res) => res.json() as unknown as any[])
+      .then((res) => res.map((item: any) => item.market));
+
+    const priceOption = {
+      method: 'GET',
+      url: server_url + '/v1/ticker' + '?markets=' + markets,
+      headers: { Authorization: `Bearer ${token}` },
+    };
+    const priceData = await fetch(priceOption.url, priceOption).then((res) => res.json() as unknown as any[]);
+
+    const priceDataToKRWPair: any = {
+      KRW: 1,
+    };
+
+    // retreive price data from KRW pair
+    priceData.forEach((item: any) => {
+      const [base, quote] = item.market.split('-');
+      if (base === 'KRW') {
+        priceDataToKRWPair[quote] = item.trade_price;
+      }
+    });
+
+    // retreive price data from btc pair with KRW-BTC price
+    priceData.forEach((item: any) => {
+      const [base, quote] = item.market.split('-');
+      if (base === 'BTC') {
+        priceDataToKRWPair[quote] = item.trade_price * priceDataToKRWPair['BTC'];
+      }
+    });
+
+    const options = {
+      method: 'GET',
+      url: server_url + '/v1/accounts',
+      headers: { Authorization: `Bearer ${token}` },
+    };
+    const res = await fetch(options.url, options).then((res) => res.json() as unknown as any[]);
+
+    const data = res.map((item: any) => {
+      return {
+        ...item,
+        price: priceDataToKRWPair[item.currency] ?? 0,
+        value: item.balance * priceDataToKRWPair[item.currency] ?? 0,
+      };
+    });
+
     const holdings = data.map((holding: any) => {
       return {
         symbol: holding.currency,
