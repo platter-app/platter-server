@@ -7,6 +7,7 @@ const serverSchema = z.object({
   NODE_ENV: z.string(),
   // Database
   DATABASE_URL: z.string().min(1),
+  DATABASE_PASSWORD: z.string().min(1),
 
   // Supabase
   SUPABASE_URL: z.string().min(1),
@@ -27,6 +28,7 @@ if (!_serverEnv.success) {
 const {
   NODE_ENV,
   DATABASE_URL,
+  DATABASE_PASSWORD,
   SUPABASE_SERVICE_ROLE,
   SUPABASE_URL,
   SENTRY_DSN,
@@ -35,6 +37,7 @@ const {
 export const env = {
   NODE_ENV,
   DATABASE_URL,
+  DATABASE_PASSWORD,
   SUPABASE_SERVICE_ROLE,
   SUPABASE_URL,
   SENTRY_DSN,
